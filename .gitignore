@@ -1,0 +1,13 @@
+# STM32CubeIDE build output
+Debug/
+Release/
+
+# PC test binaries (keep only the .cpp / .hpp files)
+pc_test/*
+!pc_test/*.cpp
+!pc_test/*.hpp
+
+# IDE / OS files
+.settings/
+*.launch
+.DS_Store
