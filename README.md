@@ -87,6 +87,10 @@ Other tests: `test_pump_calculator`, `test_pump_controller`, `test_screen_text`,
 
 Software complete. Tested on the real device (2026-11-23): the direction is right and the flow matches the calculation.
 
+## License
+
+MIT, see [LICENSE](LICENSE). The STM32 HAL and CMSIS files in `Drivers/` keep their own licenses (see the `LICENSE.txt` files there).
+
 ## Author
 
 Bahadir Sevimlier

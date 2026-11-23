@@ -13,7 +13,7 @@
 // ======================= PARAMETERS =======================
 
 constexpr uint32_t step_channel{TIM_CHANNEL_1};		// STEP pin PB4 = TIM3 channel 1
-constexpr GPIO_PinState push_level{GPIO_PIN_RESET};	// DIR PB3 LOW = plunger goes forward (Papa's tests, 2026-11-23)
+constexpr GPIO_PinState push_level{GPIO_PIN_RESET};	// DIR PB3 LOW = plunger goes forward (device tests, 2026-11-23)
 
 // ======================== CONSTRUCTOR =====================
 

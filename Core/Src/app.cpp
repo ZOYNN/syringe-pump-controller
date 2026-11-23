@@ -22,7 +22,7 @@
 
 // ======================= PARAMETERS =======================
 
-constexpr float lead_mm{1.25F};		// [mm/turn] M8 rod (Papa, 2026-11-16)
+constexpr float lead_mm{1.25F};		// [mm/turn] M8 rod (measured on the device, 2026-11-16)
 constexpr float rod_turns_per_motor_turn{10.0F / 21.0F};	// belt: motor 10 teeth, rod 21 teeth
 constexpr bool lead_is_measured{true};
 constexpr uint32_t settings_address{0x0800F800U};	// last 2 flash pages (linker: FLASH = 62K)
