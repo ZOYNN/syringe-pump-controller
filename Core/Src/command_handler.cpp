@@ -51,10 +51,6 @@ void CommandHandler::handle_line(const char* line)
 	case CommandType::jog_stop:
 		on_pump_command(command.type);
 		break;
-	case CommandType::forward:
-	case CommandType::reverse:
-		on_direction(command.type);
-		break;
 	case CommandType::none:
 		break;
 	}
@@ -69,7 +65,6 @@ void CommandHandler::restore()
 		return;		// nothing saved yet: start with empty fields
 	}
 
-	pump_.set_direction(saved.direction);
 	flow_unit_ = saved.flow_unit;
 	if (saved.has_values && (try_settings(saved.diameter_mm, saved.flow, saved.flow_unit) == CalcStatus::ok))
 	{
@@ -83,7 +78,6 @@ void CommandHandler::restore()
 void CommandHandler::show_all()
 {
 	show_state();
-	show_direction();
 	show_unit();
 	show_values(true);		// also the input boxes (values from restore())
 	show_message("");
@@ -163,19 +157,6 @@ void CommandHandler::on_pump_command(const CommandType type)
 	show_state();
 }
 
-void CommandHandler::on_direction(const CommandType type)
-{
-	const Direction direction{(type == CommandType::reverse) ? Direction::reverse : Direction::forward};
-	const CommandStatus status{pump_.set_direction(direction)};
-
-	show_message(ScreenText::command_error_text(status));
-	show_direction();		// always the real direction of the pump
-	if (status == CommandStatus::ok)
-	{
-		save_settings();
-	}
-}
-
 // The number stays, only the unit changes: 1.50 mL/dk -> 1.50 mL/sa.
 // So the motor speed changes like after a new FLW (also while running).
 // A unit that gives a refused speed is not used: the old unit stays.
@@ -212,7 +193,6 @@ void CommandHandler::save_settings()
 	settings.diameter_mm = diameter_mm_;
 	settings.flow = flow_;
 	settings.flow_unit = flow_unit_;
-	settings.direction = pump_.direction();
 	if (!store_.save(settings))
 	{
 		show_message(ScreenText::save_error_text());
@@ -222,11 +202,6 @@ void CommandHandler::save_settings()
 void CommandHandler::show_state()
 {
 	screen_.show(status_object, ScreenText::state_text(pump_.state()));
-}
-
-void CommandHandler::show_direction()
-{
-	screen_.show(direction_object, ScreenText::direction_text(pump_.direction()));
 }
 
 void CommandHandler::show_unit()

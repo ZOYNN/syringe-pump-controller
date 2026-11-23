@@ -67,7 +67,7 @@ void app_setup(void)
 {
 	start_receive();
 	HAL_Delay(screen_start_ms);		// screen needs time to start and to set 115200 baud
-	handler.restore();				// last diameter, flow, direction (pump does not start)
+	handler.restore();				// last diameter, flow, unit (pump does not start)
 	handler.show_all();				// first texts on the screen
 }
 

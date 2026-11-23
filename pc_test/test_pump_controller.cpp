@@ -25,12 +25,6 @@ constexpr float faster_flow_ml_min{2.0F};	// [mL/min]
 class FakeMotor : public MotorInterface
 {
 public:
-	void set_direction(Direction new_direction) override
-	{
-		direction = new_direction;
-		++direction_writes;
-	}
-
 	void set_rate(const TimerSettings& settings) override
 	{
 		last_settings = settings;
@@ -53,8 +47,6 @@ public:
 
 	bool running{false};
 	TimerSettings last_settings{};
-	Direction direction{Direction::forward};
-	int direction_writes{0};		// how often the DIR pin was written
 };
 
 // ========================== HELPERS ==========================
@@ -104,49 +96,28 @@ int main()
 	assert(pump.state() == PumpState::idle);
 	assert(!motor.is_running());
 
-	// 8. direction: refused while running, OK when idle
-	pump.stop();
-	assert(pump.direction() == Direction::forward);
-	assert(pump.set_direction(Direction::reverse) == CommandStatus::ok);		// idle
-	assert(pump.direction() == Direction::reverse);
-	assert(motor.direction == Direction::reverse);
-	assert(pump.start() == CommandStatus::ok);
-	assert(pump.set_direction(Direction::forward) == CommandStatus::busy);		// running
-	assert(pump.direction() == Direction::reverse);
-	assert(motor.direction == Direction::reverse);
-	assert(motor.is_running());
-	pump.stop();
-	assert(pump.set_direction(Direction::forward) == CommandStatus::ok);		// idle
-	assert(motor.direction == Direction::forward);
+	// 8. start again after a stop (one direction only: nothing to choose)
 	assert(pump.start() == CommandStatus::ok);
 	assert(pump.state() == PumpState::running);
 
-	// 9. jog: refused while running; works without settings, in the chosen direction, fixed speed
+	// 9. jog: refused while running; works without settings, fixed speed
 	assert(pump.jog() == CommandStatus::busy);
 	pump.stop();
-	assert(pump.set_direction(Direction::reverse) == CommandStatus::ok);
 	FakeMotor jog_motor{};
 	PumpController jog_pump{calculator, jog_motor};		// no settings at all
-	assert(jog_pump.set_direction(Direction::reverse) == CommandStatus::ok);
-	const int writes_before_jog{jog_motor.direction_writes};
 	assert(jog_pump.jog() == CommandStatus::ok);
 	assert(jog_pump.state() == PumpState::jogging);
 	assert(jog_motor.is_running());
-	assert(jog_motor.direction == Direction::reverse);				// GERİ chosen: jog goes back
-	assert(jog_motor.direction_writes == writes_before_jog);		// jog does not touch the DIR pin
 	const TimerSettings jog_start_rate{calculator.timer_settings(calculator.step_hz_for_rpm(PumpController::jog_start_rpm))};
 	assert(same_timer(jog_motor.last_settings, jog_start_rate));		// starts slow (ramp)
-	assert(jog_pump.direction() == Direction::reverse);			// the chosen direction is kept
 
-	// 10. while jogging: RUN and direction are refused
+	// 10. while jogging: RUN is refused
 	assert(jog_pump.start() == CommandStatus::busy);
-	assert(jog_pump.set_direction(Direction::forward) == CommandStatus::busy);
 
-	// 11. STP ends the jog: motor stops, direction stays the chosen one
+	// 11. STP ends the jog: motor stops
 	jog_pump.stop();
 	assert(jog_pump.state() == PumpState::idle);
 	assert(!jog_motor.is_running());
-	assert(jog_motor.direction == Direction::reverse);
 
 	// 11b. stop_jog: ends a jog, but never a normal run
 	assert(jog_pump.jog() == CommandStatus::ok);
@@ -171,7 +142,6 @@ int main()
 	assert(jog_pump.update(1400U + PumpController::jog_timeout_ms));		// lost: stop
 	assert(jog_pump.state() == PumpState::idle);
 	assert(!jog_motor.is_running());
-	assert(jog_motor.direction == Direction::reverse);
 	assert(!jog_pump.update(5000U));							// idle: nothing to do
 
 	// 13. ramp: jog starts at jog_start_rpm, +jog_ramp_step_rpm every jog_ramp_interval_ms, up to jog_rpm
@@ -200,23 +170,12 @@ int main()
 	assert(jog_pump.jog() == CommandStatus::ok);
 	assert(!jog_pump.update(t));
 	assert(same_timer(jog_motor.last_settings, full_rate));					// stays at full speed
-	assert(jog_motor.direction == Direction::reverse);
 	jog_pump.stop_jog();
-	assert(jog_motor.direction == Direction::reverse);
 
 	// 14. a new jog starts slow again
 	assert(jog_pump.jog() == CommandStatus::ok);
 	assert(same_timer(jog_motor.last_settings, jog_start_rate));
 	jog_pump.stop_jog();
-
-	// 15. İLERİ chosen: jog goes forward, DIR pin not written by jog / stop
-	assert(jog_pump.set_direction(Direction::forward) == CommandStatus::ok);
-	const int writes_forward{jog_motor.direction_writes};
-	assert(jog_pump.jog() == CommandStatus::ok);
-	assert(jog_motor.direction == Direction::forward);
-	jog_pump.stop_jog();
-	assert(jog_motor.direction == Direction::forward);
-	assert(jog_motor.direction_writes == writes_forward);
 
 
 	std::cout << "pump controller: ok\n";

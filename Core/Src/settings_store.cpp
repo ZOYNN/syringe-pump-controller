@@ -1,6 +1,6 @@
 // ================================================================
 //  settings_store.cpp
-//  Keeps the last diameter, flow, flow unit and direction in the flash.
+//  Keeps the last diameter, flow and flow unit in the flash.
 //  Author : Bahadir Sevimlier
 //  Date   : 2026-11-16
 // ================================================================
@@ -10,7 +10,7 @@
 //    word 1: diameter in 1/100 mm      (19.20 mm -> 1920)
 //    word 2: flow in 1/100 of its unit (1.50 -> 150), bits 0-28
 //            bits 29-30 = flow unit (0 mL/min, 1 mL/h, 2 µL/min)
-//            bit 31 = direction (1 = reverse)
+//            bit 31 = old direction bit (until 2026-11-23): not written, ignored when read
 //            Records from before the units (2026-11-17) have bits 29-30 = 0 = mL/min.
 //    word 3: checksum of words 0-2
 //  Erased flash is 0xFFFFFFFF: a free place has all 4 words = 0xFFFFFFFF.
@@ -27,7 +27,6 @@
 
 constexpr uint32_t magic{0x5350U};				// "SP" = syringe pump
 constexpr uint32_t erased_word{0xFFFFFFFFU};
-constexpr uint32_t reverse_bit{0x80000000U};	// word 2, bit 31
 constexpr uint32_t unit_shift{29U};				// word 2, bits 29-30
 constexpr uint32_t unit_mask{0x3U};
 constexpr uint32_t value_mask{0x1FFFFFFFU};		// word 2, bits 0-28
@@ -224,10 +223,6 @@ SettingsStore::Record SettingsStore::make_record(const SavedSettings& settings, 
 	record.words[1] = settings.has_values ? to_centi(settings.diameter_mm) : 0U;
 	record.words[2] = settings.has_values ? (to_centi(settings.flow) & value_mask) : 0U;
 	record.words[2] |= (static_cast<uint32_t>(settings.flow_unit) & unit_mask) << unit_shift;
-	if (settings.direction == Direction::reverse)
-	{
-		record.words[2] |= reverse_bit;
-	}
 	record.words[3] = checksum(record);
 	return record;
 }
@@ -241,14 +236,13 @@ SavedSettings SettingsStore::from_record(const Record& record)
 	settings.diameter_mm = static_cast<float>(diameter) / centi;
 	settings.flow = static_cast<float>(flow) / centi;
 	settings.flow_unit = unit_from_code((record.words[2] >> unit_shift) & unit_mask);
-	settings.direction = ((record.words[2] & reverse_bit) != 0U) ? Direction::reverse : Direction::forward;
 	return settings;
 }
 
 // compared with 2 decimals, like they are kept in the flash
 bool SettingsStore::same(const SavedSettings& a, const SavedSettings& b)
 {
-	if ((a.has_values != b.has_values) || (a.direction != b.direction) || (a.flow_unit != b.flow_unit))
+	if ((a.has_values != b.has_values) || (a.flow_unit != b.flow_unit))
 	{
 		return false;
 	}

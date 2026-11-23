@@ -53,12 +53,10 @@ bool formats_to(const float value, const std::size_t decimals, const char* expec
 
 int main()
 {
-	// 1. states and direction
+	// 1. states and units
 	assert(same(ScreenText::state_text(PumpState::idle), "HAZIR"));
 	assert(same(ScreenText::state_text(PumpState::running), "ÇALIŞIYOR"));
 	assert(same(ScreenText::state_text(PumpState::jogging), "İLERİ SÜRÜLÜYOR"));
-	assert(same(ScreenText::direction_text(Direction::forward), "İLERİ"));
-	assert(same(ScreenText::direction_text(Direction::reverse), "GERİ"));
 	assert(same(ScreenText::unit_text(FlowUnit::ml_per_min), "mL/dk"));
 	assert(same(ScreenText::unit_text(FlowUnit::ml_per_hour), "mL/sa"));
 	assert(same(ScreenText::unit_text(FlowUnit::ul_per_min), "µL/dk"));

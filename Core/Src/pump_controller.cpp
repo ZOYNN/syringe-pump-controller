@@ -1,6 +1,6 @@
 // ================================================================
 //  pump_controller.cpp
-//  The logic of the pump: settings, start, stop, direction, jog.
+//  The logic of the pump: settings, start, stop, jog (one direction only).
 //  No hardware here, so it can be tested on the PC.
 //  Author : Bahadir Sevimlier
 //  Date   : 2026-11-12
@@ -64,8 +64,7 @@ void PumpController::stop()
 	state_ = PumpState::idle;
 }
 
-// İLERİ SÜR: fixed speed, in the chosen direction (İLERİ or GERİ), needs no diameter / flow.
-// The DIR pin is not touched here: set_direction() already set it (FWD / REV, or restore at power on).
+// İLERİ SÜR: fixed speed, forward (the only direction), needs no diameter / flow.
 // The screen sends JOG again every 200 ms while the button is held.
 CommandStatus PumpController::jog()
 {
@@ -147,26 +146,8 @@ void PumpController::ramp_jog(const uint32_t now_ms)
 	motor_.set_rate(calculator_.timer_settings(calculator_.step_hz_for_rpm(jog_now_rpm_)));
 }
 
-// changed only when the motor stands (idle); while running or jogging: busy
-CommandStatus PumpController::set_direction(const Direction direction)
-{
-	if (state_ != PumpState::idle)
-	{
-		return CommandStatus::busy;
-	}
-
-	motor_.set_direction(direction);
-	direction_ = direction;
-	return CommandStatus::ok;
-}
-
 PumpState PumpController::state() const
 {
 	return state_;
-}
-
-Direction PumpController::direction() const
-{
-	return direction_;
 }
 

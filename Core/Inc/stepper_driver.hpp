@@ -1,6 +1,7 @@
 // ================================================================
 //  stepper_driver.hpp
-//  Drives the A4988 stepper driver: enable, direction, step rate.
+//  Drives the A4988 stepper driver: enable, step rate.
+//  One direction only: DIR (PB3) is always the push level.
 //  Author : Bahadir Sevimlier
 //  Date   : 2026-11-12
 // ================================================================
@@ -20,7 +21,6 @@ class StepperDriver : public MotorInterface
 public:
 	explicit StepperDriver(TIM_HandleTypeDef& timer);
 
-	void set_direction(Direction direction) override;
 	void set_rate(const TimerSettings& settings) override;
 	void start() override;
 	void stop() override;

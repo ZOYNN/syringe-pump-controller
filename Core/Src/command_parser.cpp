@@ -29,9 +29,7 @@ constexpr CommandName command_names[]{
 	{"RUN", CommandType::run},
 	{"STP", CommandType::stop},
 	{"JOG", CommandType::jog},
-	{"JST", CommandType::jog_stop},
-	{"FWD", CommandType::forward},
-	{"REV", CommandType::reverse}
+	{"JST", CommandType::jog_stop}		// FWD / REV removed (one direction only): unknown command
 };
 
 bool is_digit(const char c)

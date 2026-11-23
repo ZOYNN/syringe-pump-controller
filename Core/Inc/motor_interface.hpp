@@ -13,20 +13,11 @@
 
 #include "pump_calculator.hpp"
 
-// ========================= TYPES ==========================
-
-enum class Direction
-{
-	forward,
-	reverse
-};
-
 // ========================= CLASS ==========================
 
 class MotorInterface
 {
 public:
-	virtual void set_direction(Direction direction) = 0;
 	virtual void set_rate(const TimerSettings& settings) = 0;
 	virtual void start() = 0;
 	virtual void stop() = 0;

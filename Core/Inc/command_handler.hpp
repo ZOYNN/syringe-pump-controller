@@ -27,7 +27,6 @@ public:
 	// names of the objects on the Nextion page
 	static constexpr const char* status_object{"t_status"};
 	static constexpr const char* message_object{"t_msg"};
-	static constexpr const char* direction_object{"t_dir"};
 	static constexpr const char* diameter_object{"t_dia"};
 	static constexpr const char* flow_object{"t_flw"};
 	static constexpr const char* unit_object{"t_unit"};		// flow unit label, e.g. "mL/sa"
@@ -46,11 +45,9 @@ public:
 private:
 	void on_value(const ScreenCommand& command);
 	void on_pump_command(CommandType type);
-	void on_direction(CommandType type);
 	void on_unit(FlowUnit unit);
 	CalcStatus try_settings(float diameter_mm, float flow, FlowUnit unit);
 	void show_state();
-	void show_direction();
 	void show_unit();
 	void show_message(const char* text);
 	void show_values(bool also_inputs);

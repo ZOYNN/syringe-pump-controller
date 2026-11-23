@@ -34,13 +34,6 @@ const char* ScreenText::state_text(const PumpState state)
 	return "";
 }
 
-const char* ScreenText::direction_text(const Direction direction)
-{
-	return (direction == Direction::reverse)
-		? "GER" "\xDD"										// GERİ
-		: "\xDD" "LER" "\xDD";								// İLERİ
-}
-
 // dk = dakika (minute), sa = saat (hour)
 const char* ScreenText::unit_text(const FlowUnit unit)
 {

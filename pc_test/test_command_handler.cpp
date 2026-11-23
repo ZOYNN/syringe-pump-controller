@@ -27,11 +27,6 @@ constexpr float test_ratio{10.0F / 21.0F};				// belt ratio
 class FakeMotor : public MotorInterface
 {
 public:
-	void set_direction(Direction new_direction) override
-	{
-		direction = new_direction;
-	}
-
 	void set_rate(const TimerSettings& settings) override
 	{
 		last_settings = settings;
@@ -54,7 +49,6 @@ public:
 
 	bool running{false};
 	TimerSettings last_settings{};
-	Direction direction{Direction::forward};
 };
 
 // ======================== FAKE SCREEN =====================
@@ -92,13 +86,12 @@ int main()
 
 	const char* status{CommandHandler::status_object};
 	const char* message{CommandHandler::message_object};
-	const char* direction{CommandHandler::direction_object};
 
-	// 1. power on: state, direction, empty message
+	// 1. power on: state, empty message, no direction text (t_dir is gone)
 	handler.show_all();
 	assert(screen.text(status) == ScreenText::state_text(PumpState::idle));
-	assert(screen.text(direction) == ScreenText::direction_text(Direction::forward));
 	assert(screen.text(message) == "");
+	assert(screen.texts.count("t_dir") == 0U);
 
 	// 2. RUN without settings is refused
 	handler.handle_line("RUN");
@@ -136,18 +129,16 @@ int main()
 	assert(screen.show_count == count_before);
 	assert(motor.is_running());
 
-	// 6. direction: refused while running, OK when stopped
+	// 6. FWD / REV are gone: unknown command, the motor keeps going, no t_dir
 	handler.handle_line("REV");
-	assert(screen.text(message) == ScreenText::command_error_text(CommandStatus::busy));
-	assert(screen.text(direction) == ScreenText::direction_text(Direction::forward));
-	assert(motor.direction == Direction::forward);
+	assert(screen.text(message) == ScreenText::parse_error_text(ParseStatus::unknown_command));
+	assert(motor.is_running());
+	handler.handle_line("FWD");
+	assert(screen.text(message) == ScreenText::parse_error_text(ParseStatus::unknown_command));
+	assert(screen.texts.count("t_dir") == 0U);
 	handler.handle_line("STP");
 	assert(screen.text(status) == ScreenText::state_text(PumpState::idle));
 	assert(!motor.is_running());
-	handler.handle_line("REV");
-	assert(screen.text(message) == "");
-	assert(screen.text(direction) == ScreenText::direction_text(Direction::reverse));
-	assert(motor.direction == Direction::reverse);
 
 	// 8. bad diameter (flow is known): error at once, the old diameter stays on the screen
 	handler.handle_line("DIA0");
@@ -218,7 +209,6 @@ int main()
 	//     shows them (also in the input boxes), and the pump does NOT start
 	handler.handle_line("DIA19.20");
 	handler.handle_line("FLW1.5");
-	handler.handle_line("REV");
 	FakeMotor motor3{};
 	PumpController pump3{calculator, motor3};
 	FakeScreen screen3{};
@@ -230,8 +220,7 @@ int main()
 	assert(screen3.text(CommandHandler::flow_object) == "1.50");
 	assert(screen3.text(CommandHandler::diameter_input) == "19.20");
 	assert(screen3.text(CommandHandler::flow_input) == "1.50");
-	assert(screen3.text(direction) == ScreenText::direction_text(Direction::reverse));
-	assert(motor3.direction == Direction::reverse);
+	assert(screen3.texts.count("t_dir") == 0U);
 	assert(screen3.text(status) == ScreenText::state_text(PumpState::idle));
 	assert(!motor3.is_running());
 	handler3.handle_line("RUN");			// values are really in the pump
@@ -262,7 +251,6 @@ int main()
 	handler5.restore();
 	handler5.show_all();
 	assert(screen5.text(CommandHandler::diameter_object) == "");
-	assert(screen5.text(direction) == ScreenText::direction_text(Direction::forward));
 
 	// 18. flow units: power on shows mL/dk; the unit can be chosen before the values
 	FakeFlash unit_flash{};

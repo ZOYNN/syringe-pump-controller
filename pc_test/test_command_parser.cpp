@@ -71,10 +71,6 @@ int main()
 	assert(command.type == CommandType::jog);
 	assert(parse("JST", command) == ParseStatus::ok);
 	assert(command.type == CommandType::jog_stop);
-	assert(parse("FWD", command) == ParseStatus::ok);
-	assert(command.type == CommandType::forward);
-	assert(parse("REV", command) == ParseStatus::ok);
-	assert(command.type == CommandType::reverse);
 
 	// 3. '\r' and spaces at the end are OK
 	assert(parse("RUN\r", command) == ParseStatus::ok);
@@ -90,6 +86,8 @@ int main()
 	assert(parse("XYZ", command) == ParseStatus::unknown_command);
 	assert(parse("run", command) == ParseStatus::unknown_command);
 	assert(parse("RU", command) == ParseStatus::unknown_command);
+	assert(parse("FWD", command) == ParseStatus::unknown_command);		// removed (one direction only)
+	assert(parse("REV", command) == ParseStatus::unknown_command);
 	assert(command.type == CommandType::none);
 
 	// 6. bad values

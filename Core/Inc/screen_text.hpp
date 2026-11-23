@@ -26,7 +26,6 @@ public:
 	static constexpr float max_value{9999.99F};		// same as CommandParser
 
 	static const char* state_text(PumpState state);
-	static const char* direction_text(Direction direction);
 	static const char* unit_text(FlowUnit unit);		// label next to the flow: "mL/dk" ...
 
 	// "" when the status is ok (the message box is cleared)

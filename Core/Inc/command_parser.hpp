@@ -1,7 +1,7 @@
 // ================================================================
 //  command_parser.hpp
 //  Turns one text line from the screen into a command.
-//  Example lines: "DIA19.20", "FLW0.08", "UNT1", "RUN", "REV".
+//  Example lines: "DIA19.20", "FLW0.08", "UNT1", "RUN", "JOG".
 //  No hardware here, so it can be tested on the PC.
 //  Author : Bahadir Sevimlier
 //  Date   : 2026-11-13
@@ -28,9 +28,7 @@ enum class CommandType
 	run,		// RUN
 	stop,		// STP
 	jog,		// JOG (İLERİ SÜR held)
-	jog_stop,	// JST (İLERİ SÜR released): stops only a jog
-	forward,	// FWD
-	reverse		// REV
+	jog_stop	// JST (İLERİ SÜR released): stops only a jog
 };
 
 enum class ParseStatus

@@ -1,6 +1,6 @@
 // ================================================================
 //  pump_controller.hpp
-//  The logic of the pump: settings, start, stop, direction, jog.
+//  The logic of the pump: settings, start, stop, jog (one direction only).
 //  No hardware here, so it can be tested on the PC.
 //  Author : Bahadir Sevimlier
 //  Date   : 2026-11-12
@@ -51,9 +51,7 @@ public:
 	CommandStatus jog();
 	void stop_jog();					// stops only a jog, a normal run goes on
 	bool update(uint32_t now_ms);		// call often; true = the jog stopped by itself
-	CommandStatus set_direction(Direction direction);
 	PumpState state() const;
-	Direction direction() const;
 
 private:
 	void ramp_jog(uint32_t now_ms);		// makes the jog faster step by step
@@ -63,7 +61,6 @@ private:
 	PumpState state_{PumpState::idle};
 	bool settings_valid_{false};
 	TimerSettings timer_{};
-	Direction direction_{Direction::forward};
 	bool jog_refreshed_{false};		// a JOG came since the last update()
 	uint32_t last_jog_ms_{0U};		// [ms] time of the last JOG seen by update()
 	float jog_now_rpm_{0.0F};		// [rpm] jog speed now (ramp)

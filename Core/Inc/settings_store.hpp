@@ -1,6 +1,6 @@
 // ================================================================
 //  settings_store.hpp
-//  Keeps the last diameter, flow, flow unit and direction in the flash,
+//  Keeps the last diameter, flow and flow unit in the flash,
 //  so they are back after a power cut (M7).
 //  Uses 2 flash pages as a ring of 16-byte records. A new record
 //  goes to the next free place; a page is erased only when the
@@ -18,7 +18,6 @@
 #include <cstdint>
 
 #include "flash_interface.hpp"
-#include "motor_interface.hpp"
 #include "pump_calculator.hpp"
 
 // ========================= STRUCTS ========================
@@ -29,7 +28,6 @@ struct SavedSettings
 	float diameter_mm{0.0F};
 	float flow{0.0F};			// the number on the screen, in flow_unit
 	FlowUnit flow_unit{FlowUnit::ml_per_min};
-	Direction direction{Direction::forward};
 };
 
 // ========================= CLASS ==========================

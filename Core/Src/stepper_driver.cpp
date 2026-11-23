@@ -1,6 +1,7 @@
 // ================================================================
 //  stepper_driver.cpp
-//  Drives the A4988 stepper driver: enable, direction, step rate.
+//  Drives the A4988 stepper driver: enable, step rate.
+//  One direction only: DIR (PB3) is always the push level.
 //  Author : Bahadir Sevimlier
 //  Date   : 2026-11-12
 // ================================================================
@@ -12,6 +13,7 @@
 // ======================= PARAMETERS =======================
 
 constexpr uint32_t step_channel{TIM_CHANNEL_1};		// STEP pin PB4 = TIM3 channel 1
+constexpr GPIO_PinState push_level{GPIO_PIN_RESET};	// DIR PB3 LOW = plunger goes forward (Papa's tests, 2026-11-23)
 
 // ======================== CONSTRUCTOR =====================
 
@@ -21,12 +23,6 @@ StepperDriver::StepperDriver(TIM_HandleTypeDef& timer) : timer_{timer}
 }
 
 // ======================== METHODS =========================
-
-void StepperDriver::set_direction(const Direction direction)
-{
-	const GPIO_PinState level{(direction == Direction::reverse) ? GPIO_PIN_SET : GPIO_PIN_RESET};
-	HAL_GPIO_WritePin(DRV_DIR_GPIO_Port, DRV_DIR_Pin, level);
-}
 
 void StepperDriver::set_rate(const TimerSettings& settings)
 {
@@ -47,6 +43,7 @@ void  StepperDriver::start()
 	{
 		return;
 	}
+	HAL_GPIO_WritePin(DRV_DIR_GPIO_Port, DRV_DIR_Pin, push_level);		// before the first step (main.c also sets LOW)
 	HAL_GPIO_WritePin(DRV_ENABLE_GPIO_Port, DRV_ENABLE_Pin, GPIO_PIN_RESET);		// active low: driver on
 	HAL_TIM_PWM_Start(&timer_, step_channel);
 	running_ = true;

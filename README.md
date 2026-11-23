@@ -9,7 +9,7 @@ Written in **C++** (classes split into `.hpp` + `.cpp`) on top of the STM32 HAL,
 
 - Flow rate in **mL/min**, **mL/h** or **µL/min**, with 2 decimals
 - Syringe diameter input in mm
-- Start / stop, forward / reverse direction
+- Start / stop; the motor turns in one direction only (DIR fixed, pushes forward)
 - Jog (move while the button is held) with a soft start and a safety timeout
 - Last settings (diameter, flow, unit) saved in flash and loaded at power-on
 - Hardware-independent logic, tested on a PC (see [PC tests](#pc-tests))
@@ -29,7 +29,7 @@ Written in **C++** (classes split into `.hpp` + `.cpp`) on top of the STM32 HAL,
 |---|---|
 | PA9 / PA10 | USART1 TX / RX → Nextion (115200 baud) |
 | PB4 | STEP (TIM3 CH1, PWM) |
-| PB3 | DIR |
+| PB3 | DIR (always LOW = forward) |
 | PB9 | ENABLE |
 | PB8 / PB7 / PB6 | MS1 / MS2 / MS3 (microstep) |
 | PB5 | RESET |
@@ -47,10 +47,9 @@ The screen sends one text line per command. The firmware answers with normal Nex
 | `FLW<value>` | flow rate in the chosen unit, e.g. `FLW0.08` |
 | `UNT0` / `UNT1` / `UNT2` | unit: mL/min / mL/h / µL/min |
 | `RUN` / `STP` | start / stop |
-| `FWD` / `REV` | direction (refused while running) |
 | `JOG` / `JST` | jog start / jog stop |
 
-Screen texts are in Turkish. The Nextion project file (`.HMI`) is not in this repo yet.
+Any other command (e.g. the old `FWD` / `REV`) gives "unknown command". Screen texts are in Turkish. The Nextion project file (`.HMI`) is not in this repo yet.
 
 ## Code structure
 
@@ -58,7 +57,7 @@ Screen texts are in Turkish. The Nextion project file (`.HMI`) is not in this re
 |---|---|
 | `app` | main loop, connects all parts |
 | `pump_calculator` | diameter + flow → pulses per mL → step frequency |
-| `pump_controller` | pump states (stop / run / jog), direction |
+| `pump_controller` | pump states (stop / run / jog) |
 | `stepper_driver`, `motor_interface` | A4988 control over TIM3 PWM |
 | `line_reader`, `command_parser` | UART bytes → lines → commands |
 | `command_handler` | runs a command and updates the screen |
@@ -86,7 +85,7 @@ Other tests: `test_pump_calculator`, `test_pump_controller`, `test_screen_text`,
 
 ## Status
 
-The firmware works on the real device. Calibration and more real tests are still in progress.
+Software complete. Tested on the real device (2026-11-23): the direction is right and the flow matches the calculation.
 
 ## Author
 
